@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NeuroScreen | AI Brain Screening</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<header class="navbar">
+
+    <div class="logo">
+        <div class="logo-icon">🧠</div>
+
+        <div>
+            <h2>NeuroScreen</h2>
+            <span>AI Brain Research Platform</span>
+        </div>
+    </div>
+
+
+    <nav>
+
+        <a href="#dashboard">Dashboard</a>
+
+        <a href="#analysis">Analysis</a>
+
+        <a href="#datasets">Datasets</a>
+
+        <a href="#pipeline">AI Pipeline</a>
+
+    </nav>
+
+
+    <button class="login-btn" id="loginBtn">
+        Login
+    </button>
+
+</header>
+
+
+<!-- ================= HERO ================= -->
+
+<section class="hero" id="dashboard">
+
+    <div class="hero-content">
+
+        <div class="badge">
+            ✦ AI-POWERED NEUROIMAGING
+        </div>
+
+        <h1>
+            Multi-Disease
+            <span>Brain Screening</span>
+            from MRI
+        </h1>
+
+        <p>
+            An AI research platform combining Vision Transformers
+            and Graph Neural Networks for multi-disease brain MRI
+            analysis.
+        </p>
+
+
+        <div class="hero-buttons">
+
+            <button class="primary-btn"
+                    onclick="scrollToAnalysis()">
+
+                <span>Upload MRI Scan</span>
+                <span>→</span>
+
+            </button>
+
+
+            <button class="secondary-btn"
+                    onclick="scrollToPipeline()">
+
+                Explore AI Pipeline
+
+            </button>
+
+        </div>
+
+
+        <div class="hero-stats">
+
+            <div>
+                <strong>03</strong>
+                <span>Target Conditions</span>
+            </div>
+
+            <div>
+                <strong>ViT</strong>
+                <span>Feature Extraction</span>
+            </div>
+
+            <div>
+                <strong>GNN</strong>
+                <span>Graph Learning</span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Brain visual -->
+
+    <div class="brain-visual">
+
+        <div class="glow"></div>
+
+        <div class="brain-circle">
+
+            <div class="brain-symbol">
+                🧠
+            </div>
+
+            <div class="scan-line"></div>
+
+        </div>
+
+
+        <div class="floating-card card-one">
+
+            <span class="mini-icon">✦</span>
+
+            <div>
+                <strong>ViT</strong>
+                <small>Feature Extraction</small>
+            </div>
+
+        </div>
+
+
+        <div class="floating-card card-two">
+
+            <span class="mini-icon">◈</span>
+
+            <div>
+                <strong>GNN</strong>
+                <small>Graph Learning</small>
+            </div>
+
+        </div>
+
+
+        <div class="floating-card card-three">
+
+            <span class="mini-icon">✓</span>
+
+            <div>
+                <strong>Multi-Disease</strong>
+                <small>Research Model</small>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= CONDITIONS ================= -->
+
+<section class="conditions">
+
+    <div class="section-heading">
+
+        <span>RESEARCH SCOPE</span>
+
+        <h2>
+            Target Conditions
+        </h2>
+
+        <p>
+            NeuroScreen is designed as a research prototype
+            for three neurological / neurodevelopmental conditions.
+        </p>
+
+    </div>
+
+
+    <div class="condition-grid">
+
+
+        <div class="condition-card">
+
+            <div class="condition-number">
+                01
+            </div>
+
+            <div class="condition-icon">
+                🧠
+            </div>
+
+            <h3>
+                Alzheimer's Disease
+            </h3>
+
+            <p>
+                MRI-based research analysis of structural
+                brain patterns associated with Alzheimer's disease.
+            </p>
+
+            <span class="condition-tag">
+                AD
+            </span>
+
+        </div>
+
+
+        <div class="condition-card">
+
+            <div class="condition-number">
+                02
+            </div>
+
+            <div class="condition-icon">
+                🧬
+            </div>
+
+            <h3>
+                Parkinson's Disease
+            </h3>
+
+            <p>
+                Research-oriented analysis of MRI-derived
+                neurological features related to Parkinson's disease.
+            </p>
+
+            <span class="condition-tag">
+                PD
+            </span>
+
+        </div>
+
+
+        <div class="condition-card">
+
+            <div class="condition-number">
+                03
+            </div>
+
+            <div class="condition-icon">
+                ◉
+            </div>
+
+            <h3>
+                Autism Spectrum Disorder
+            </h3>
+
+            <p>
+                Research analysis of brain imaging features
+                associated with autism spectrum disorder.
+            </p>
+
+            <span class="condition-tag">
+                ASD
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= ANALYSIS ================= -->
+
+<section class="analysis-section" id="analysis">
+
+    <div class="section-heading">
+
+        <span>NEUROIMAGING ANALYSIS</span>
+
+        <h2>
+            Upload MRI Scan
+        </h2>
+
+        <p>
+            Upload an MRI scan to demonstrate the NeuroScreen
+            analysis workflow.
+        </p>
+
+    </div>
+
+
+    <div class="analysis-container">
+
+
+        <!-- Upload panel -->
+
+        <div class="upload-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <span>STEP 01</span>
+                    <h3>Upload Brain MRI</h3>
+                </div>
+
+                <div class="status-dot">
+                    ●
+                </div>
+
+            </div>
+
+
+            <label class="upload-area" id="uploadArea">
+
+                <input
+                    type="file"
+                    id="mriInput"
+                    accept=".nii,.nii.gz,.png,.jpg,.jpeg"
+                >
+
+
+                <div class="upload-icon">
+                    ↑
+                </div>
+
+
+                <h3>
+                    Drop your MRI scan here
+                </h3>
+
+
+                <p>
+                    or click to browse files
+                </p>
+
+
+                <div class="supported">
+
+                    Supported:
+                    NIfTI (.nii, .nii.gz),
+                    PNG, JPG, JPEG
+
+                </div>
+
+            </label>
+
+
+            <div class="selected-file"
+                 id="selectedFile">
+
+                No MRI selected
+
+            </div>
+
+
+            <button class="primary-btn full-btn"
+                    id="analyzeBtn">
+
+                <span>Start AI Analysis</span>
+
+                <span>→</span>
+
+            </button>
+
+        </div>
+
+
+        <!-- Preview panel -->
+
+        <div class="preview-panel">
+
+            <div class="panel-title">
+
+                <div>
+                    <span>STEP 02</span>
+                    <h3>MRI Preview</h3>
+                </div>
+
+                <span class="preview-status"
+                      id="previewStatus">
+
+                    WAITING
+
+                </span>
+
+            </div>
+
+
+            <div class="mri-preview"
+                 id="mriPreview">
+
+                <div class="preview-placeholder">
+
+                    <div class="large-brain">
+                        🧠
+                    </div>
+
+                    <p>
+                        MRI preview will appear here
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="preview-info">
+
+                <div>
+                    <span>FILE</span>
+                    <strong id="previewFile">
+                        —
+                    </strong>
+                </div>
+
+                <div>
+                    <span>FORMAT</span>
+                    <strong id="previewFormat">
+                        —
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= PROCESSING ================= -->
+
+<section class="processing-section">
+
+    <div class="section-heading">
+
+        <span>AI WORKFLOW</span>
+
+        <h2>
+            MRI Analysis Pipeline
+        </h2>
+
+    </div>
+
+
+    <div class="pipeline-small">
+
+        <div class="pipeline-step active">
+
+            <div class="step-icon">
+                01
+            </div>
+
+            <h3>
+                MRI
+            </h3>
+
+            <p>
+                Input scan
+            </p>
+
+        </div>
+
+
+        <div class="pipeline-line"></div>
+
+
+        <div class="pipeline-step">
+
+            <div class="step-icon">
+                02
+            </div>
+
+            <h3>
+                Preprocess
+            </h3>
+
+            <p>
+                Normalize
+            </p>
+
+        </div>
+
+
+        <div class="pipeline-line"></div>
+
+
+        <div class="pipeline-step">
+
+            <div class="step-icon">
+                03
+            </div>
+
+            <h3>
+                Parcellation
+            </h3>
+
+            <p>
+                Brain regions
+            </p>
+
+        </div>
+
+
+        <div class="pipeline-line"></div>
+
+
+        <div class="pipeline-step vit">
+
+            <div class="step-icon">
+                04
+            </div>
+
+            <h3>
+                ViT
+            </h3>
+
+            <p>
+                Features
+            </p>
+
+        </div>
+
+
+        <div class="pipeline-line"></div>
+
+
+        <div class="pipeline-step gnn">
+
+            <div class="step-icon">
+                05
+            </div>
+
+            <h3>
+                GNN
+            </h3>
+
+            <p>
+                Relationships
+            </p>
+
+        </div>
+
+
+        <div class="pipeline-line"></div>
+
+
+        <div class="pipeline-step">
+
+            <div class="step-icon">
+                06
+            </div>
+
+            <h3>
+                Fusion
+            </h3>
+
+            <p>
+                Classification
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= RESULT ================= -->
+
+<section class="result-section"
+         id="resultSection">
+
+    <div class="section-heading">
+
+        <span>ANALYSIS RESULT</span>
+
+        <h2>
+            AI Research Output
+        </h2>
+
+    </div>
+
+
+    <div class="result-card">
+
+
+        <div class="result-left">
+
+            <div class="result-status">
+
+                <span class="result-dot"></span>
+
+                <span id="resultStatus">
+                    MODEL NOT CONNECTED
+                </span>
+
+            </div>
+
+
+            <h3 id="resultTitle">
+                MRI Ready for Analysis
+            </h3>
+
+
+            <p id="resultDescription">
+
+                Upload an MRI scan and start the workflow.
+                A trained AI model will be connected in a
+                later development stage.
+
+            </p>
+
+
+            <div class="result-warning">
+
+                ⚠ Research Prototype
+
+                <p>
+                    This interface does not provide a medical
+                    diagnosis. Predictions will only be displayed
+                    after a trained and validated research model
+                    is integrated.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="result-right">
+
+            <div class="result-circle">
+
+                <span>
+                    AI
+                </span>
+
+                <small>
+                    MODEL
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= EXPLAINABILITY ================= -->
+
+<section class="explain-section">
+
+    <div class="section-heading">
+
+        <span>EXPLAINABLE AI</span>
+
+        <h2>
+            Model Interpretability
+        </h2>
+
+        <p>
+            Future versions can display visual explanations
+            showing which brain regions contributed to the model output.
+        </p>
+
+    </div>
+
+
+    <div class="explain-grid">
+
+
+        <div class="explain-card">
+
+            <div class="explain-image heatmap">
+
+                <div class="heat-circle one"></div>
+
+                <div class="heat-circle two"></div>
+
+                <div class="heat-circle three"></div>
+
+                <span>HEATMAP</span>
+
+            </div>
+
+            <h3>
+                Attention Map
+            </h3>
+
+            <p>
+                Visualize important regions identified
+                by the Vision Transformer.
+            </p>
+
+        </div>
+
+
+        <div class="explain-card">
+
+            <div class="explain-image graph">
+
+                <div class="graph-node n1"></div>
+
+                <div class="graph-node n2"></div>
+
+                <div class="graph-node n3"></div>
+
+                <div class="graph-node n4"></div>
+
+                <div class="graph-node n5"></div>
+
+                <div class="graph-line l1"></div>
+
+                <div class="graph-line l2"></div>
+
+                <div class="graph-line l3"></div>
+
+                <span>GNN</span>
+
+            </div>
+
+            <h3>
+                Brain Connectivity
+            </h3>
+
+            <p>
+                Visualize relationships between brain regions
+                represented as a graph.
+            </p>
+
+        </div>
+
+
+        <div class="explain-card">
+
+            <div class="explain-image regions">
+
+                <div class="region r1"></div>
+
+                <div class="region r2"></div>
+
+                <div class="region r3"></div>
+
+                <div class="region r4"></div>
+
+                <span>ROI</span>
+
+            </div>
+
+            <h3>
+                Brain Regions
+            </h3>
+
+            <p>
+                Display relevant regions of interest used
+                during model analysis.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= DATASETS ================= -->
+
+<section class="datasets-section"
+         id="datasets">
+
+    <div class="section-heading">
+
+        <span>MODEL DEVELOPMENT</span>
+
+        <h2>
+            Training Datasets
+        </h2>
+
+        <p>
+            Dataset management interface for future model training.
+        </p>
+
+    </div>
+
+
+    <div class="dataset-grid">
+
+
+        <div class="dataset-card">
+
+            <div class="dataset-top">
+
+                <span class="dataset-icon">
+                    AD
+                </span>
+
+                <span class="dataset-status">
+                    NOT CONNECTED
+                </span>
+
+            </div>
+
+            <h3>
+                Alzheimer's Disease
+            </h3>
+
+            <p>
+                MRI dataset for Alzheimer's disease research.
+            </p>
+
+            <div class="dataset-footer">
+                <span>Dataset</span>
+                <span>AD</span>
+            </div>
+
+        </div>
+
+
+        <div class="dataset-card">
+
+            <div class="dataset-top">
+
+                <span class="dataset-icon">
+                    PD
+                </span>
+
+                <span class="dataset-status">
+                    NOT CONNECTED
+                </span>
+
+            </div>
+
+            <h3>
+                Parkinson's Disease
+            </h3>
+
+            <p>
+                MRI dataset for Parkinson's disease research.
+            </p>
+
+            <div class="dataset-footer">
+                <span>Dataset</span>
+                <span>PD</span>
+            </div>
+
+        </div>
+
+
+        <div class="dataset-card">
+
+            <div class="dataset-top">
+
+                <span class="dataset-icon">
+                    ASD
+                </span>
+
+                <span class="dataset-status">
+                    NOT CONNECTED
+                </span>
+
+            </div>
+
+            <h3>
+                Autism Spectrum Disorder
+            </h3>
+
+            <p>
+                Brain imaging dataset for ASD research.
+            </p>
+
+            <div class="dataset-footer">
+                <span>Dataset</span>
+                <span>ASD</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= FULL PIPELINE ================= -->
+
+<section class="full-pipeline"
+         id="pipeline">
+
+    <div class="section-heading">
+
+        <span>HYBRID AI ARCHITECTURE</span>
+
+        <h2>
+            ViT + GNN
+        </h2>
+
+        <p>
+            Proposed architecture for combining image-level
+            features with brain connectivity information.
+        </p>
+
+    </div>
+
+
+    <div class="architecture">
+
+        <div class="architecture-box">
+
+            <span>
+                INPUT
+            </span>
+
+            <strong>
+                T1 MRI
+            </strong>
+
+        </div>
+
+
+        <div class="arrow">
+            →
+        </div>
+
+
+        <div class="architecture-box">
+
+            <span>
+                STAGE 01
+            </span>
+
+            <strong>
+                Preprocessing
+            </strong>
+
+        </div>
+
+
+        <div class="arrow">
+            →
+        </div>
+
+
+        <div class="architecture-box">
+
+            <span>
+                STAGE 02
+            </span>
+
+            <strong>
+                Brain Parcellation
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <div class="dual-architecture">
+
+
+        <div class="architecture-branch">
+
+            <div class="branch-label">
+                VISION BRANCH
+            </div>
+
+            <h3>
+                Vision Transformer
+            </h3>
+
+            <p>
+                Extract spatial and visual representations
+                from MRI regions.
+            </p>
+
+            <div class="branch-code">
+                MRI → Patches → Transformer → Features
+            </div>
+
+        </div>
+
+
+        <div class="architecture-branch">
+
+            <div class="branch-label">
+                GRAPH BRANCH
+            </div>
+
+            <h3>
+                Graph Neural Network
+            </h3>
+
+            <p>
+                Model relationships and connectivity
+                between brain regions.
+            </p>
+
+            <div class="branch-code">
+                ROIs → Graph → GNN → Features
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="fusion-box">
+
+        <span>
+            FEATURE FUSION
+        </span>
+
+        <h3>
+            ViT Features + GNN Features
+        </h3>
+
+        <p>
+            Combined representation for multi-disease
+            classification research.
+        </p>
+
+    </div>
+
+</section>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    <div class="footer-brand">
+
+        <div class="logo-icon">
+            🧠
+        </div>
+
+        <div>
+
+            <strong>
+                NeuroScreen
+            </strong>
+
+            <p>
+                AI Brain Research Platform
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer-note">
+
+        Research Prototype • Not for clinical diagnosis
+
+    </div>
+
+</footer>
+
+
+<!-- ================= LOGIN MODAL ================= -->
+
+<div class="modal hidden"
+     id="loginModal">
+
+    <div class="modal-box">
+
+        <button class="close-modal"
+                id="closeModal">
+            ×
+        </button>
+
+
+        <div class="modal-icon">
+            🧠
+        </div>
+
+
+        <h2>
+            Welcome to NeuroScreen
+        </h2>
+
+
+        <p>
+            Research platform login
+        </p>
+
+
+        <input type="email"
+               placeholder="Email address">
+
+
+        <input type="password"
+               placeholder="Password">
+
+
+        <button class="primary-btn full-btn"
+                onclick="fakeLogin()">
+
+            Login
+
+        </button>
+
+
+        <small>
+            Authentication is currently a frontend demonstration.
+        </small>
+
+    </div>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+
+</body>
+
+</html>
