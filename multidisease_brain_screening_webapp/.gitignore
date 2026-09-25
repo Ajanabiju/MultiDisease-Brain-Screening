@@ -1,0 +1,16 @@
+﻿.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Medical Scans & Raw Archives
+data/oasis_raw/
+data/parkinsons_raw/
+data/*.csv
+data/*.zip
+data/*.tar*
+data/*.1D
+nilearn_data/
+
+# Model Checkpoints
+checkpoints/*.pt
