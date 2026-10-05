@@ -1,0 +1,8 @@
+sample_scans/
+*.nii
+*.nii.gz
+*.hdr
+*.img
+checkpoints/
+*.pt
+__pycache__/
