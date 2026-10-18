@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroScreen | AI Brain Screening</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- 1. Three.js core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- 2. OrbitControls for rotation/zoom -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <!-- 3. OBJLoader for the 3D anatomical brain surface -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+
+    <!-- 4. Application logic (loaded once with defer) -->
+    <script src="{{ url_for('static', filename='app.js') }}?v=5" defer></script>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="navbar">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 0.75rem 2rem; background: #0f172a; border-bottom: 1px solid #1e293b;">
+        <div>
+            <strong style="color: #38bdf8;">NeuroScreen CDSS</strong>
+            <span style="font-size: 0.75rem; color: #64748b; margin-left: 0.5rem;">v2.4 Production (AAL-116 Engine)</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem; font-size: 0.85rem;">
+            <span style="color: #cbd5e1;">● {{ clinician_name }} ({{ clinician_license }})</span>
+            <a href="{{ url_for('logout') }}" style="color: #f87171; text-decoration: none; border: 1px solid #334155; padding: 0.25rem 0.6rem; border-radius: 4px;">Sign Out</a>
+        </div>
+    </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="dashboard">
+    <div class="hero-content">
+        <div class="badge">✦ AI-POWERED NEUROIMAGING</div>
+        <h1>Multi-Disease <span>Brain Screening</span> from MRI</h1>
+        <p>
+            An AI diagnostic support platform combining Vision Transformers
+            and Graph Neural Networks for multi-disease brain MRI analysis.
+        </p>
+
+        <div class="hero-buttons">
+            <button class="primary-btn" onclick="scrollToAnalysis()">
+                <span>Upload MRI Scan</span>
+                <span>→</span>
+            </button>
+        </div>
+
+        <div class="hero-stats">
+            <div>
+                <strong>03</strong>
+                <span>Target Conditions</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brain visual decoration -->
+    <div class="brain-visual">
+        <div class="glow"></div>
+        <div class="brain-circle">
+            <div class="brain-symbol">🧠</div>
+            <div class="scan-line"></div>
+        </div>
+
+        <div class="floating-card card-one">
+            <span class="mini-icon">✦</span>
+            <div>
+                <strong>ViT</strong>
+                <small>Feature Extraction</small>
+            </div>
+        </div>
+
+        <div class="floating-card card-two">
+            <span class="mini-icon">◈</span>
+            <div>
+                <strong>GNN</strong>
+                <small>Graph Learning</small>
+            </div>
+        </div>
+
+        <div class="floating-card card-three">
+            <span class="mini-icon">✓</span>
+            <div>
+                <strong>Multi-Disease</strong>
+                <small>Screening Model</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CONDITIONS ================= -->
+<section class="conditions">
+    <div class="section-heading">
+        <span>CLINICAL SCOPE</span>
+        <h2>Target Conditions</h2>
+        <p>NeuroScreen is trained to evaluate three primary neurological/neurodevelopmental profiles.</p>
+    </div>
+
+    <div class="condition-grid">
+        <div class="condition-card">
+            <div class="condition-number">01</div>
+            <div class="condition-icon">🧠</div>
+            <h3>Alzheimer's Disease</h3>
+            <p>Structural atrophy pattern analysis across hippocampal and temporoparietal cortices.</p>
+            <span class="condition-tag">AD</span>
+        </div>
+
+        <div class="condition-card">
+            <div class="condition-number">02</div>
+            <div class="condition-icon">🧬</div>
+            <h3>Parkinson's Disease</h3>
+            <p>Subcortical dysconnectivity and basal ganglia biomarker evaluation.</p>
+            <span class="condition-tag">PD</span>
+        </div>
+
+        <div class="condition-card">
+            <div class="condition-number">03</div>
+            <div class="condition-icon">◉</div>
+            <h3>Autism Spectrum Disorder</h3>
+            <p>Functional connectome dynamics and resting-state whole-brain topological staging.</p>
+            <span class="condition-tag">ASD</span>
+        </div>
+    </div>
+</section>
+
+<!-- ================= ANALYSIS ================= -->
+<section class="analysis-section" id="analysis">
+
+    <!-- Patient Metadata Intake -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: #131d2e; padding: 1.25rem; border-radius: 8px; border: 1px solid #1e293b;">
+        <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Patient Full Name</label>
+            <input type="text" id="patientNameInput" placeholder="e.g. John Doe" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Age (Years)</label>
+            <input type="number" id="patientAgeInput" min="1" max="120" placeholder="e.g. 58" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Biological Sex / Gender</label>
+            <select id="patientGenderInput" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Contact Number</label>
+            <input type="tel" id="patientPhoneInput" placeholder="+91 98765 43210" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <div style="grid-column: 1 / -1;">
+            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Scan Modality / Protocol</label>
+            <select id="scanModalityInput" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+                <option value="3D T1-Weighted Structural MRI">3D T1-Weighted Structural MRI (OASIS / PPMI)</option>
+                <option value="4D rs-fMRI Resting-State Connectome">4D rs-fMRI Resting-State Connectome (ABIDE)</option>
+                <option value="2D Axial MRI Slice">2D Axial MRI Slice (Preview / Localizer)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="section-heading">
+        <span>NEUROIMAGING ANALYSIS</span>
+        <h2>Upload MRI Scan</h2>
+        <p>Submit a de-identified MRI volume (.nii, .nii.gz, or slice preview) to run the AI screening pipeline.</p>
+    </div>
+
+    <div class="analysis-container">
+        <!-- Upload panel -->
+        <div class="upload-panel">
+            <div class="panel-title">
+                <div>
+                    <span>STEP 01</span>
+                    <h3>Upload Brain MRI</h3>
+                </div>
+                <div class="status-dot">●</div>
+            </div>
+
+            <label class="upload-area" id="uploadArea">
+                <input type="file" id="mriInput" accept=".nii,.nii.gz,.png,.jpg,.jpeg">
+                <div class="upload-icon">↑</div>
+                <h3>Drop your MRI scan here</h3>
+                <p>or click to browse files</p>
+                <div class="supported">
+                    Supported: NIfTI (.nii, .nii.gz), PNG, JPG, JPEG
+                </div>
+            </label>
+
+            <div class="selected-file" id="selectedFile">
+                No MRI selected
+            </div>
+
+            <button class="primary-btn full-btn" id="analyzeBtn">
+                <span>Start AI Analysis</span>
+                <span>→</span>
+            </button>
+        </div>
+
+        <!-- Preview panel -->
+        <div class="preview-panel">
+            <div class="panel-title">
+                <div>
+                    <span>STEP 02</span>
+                    <h3>MRI Preview</h3>
+                </div>
+                <span class="preview-status" id="previewStatus">WAITING</span>
+            </div>
+
+            <div class="mri-preview" id="mriPreview">
+                <div class="preview-placeholder">
+                    <div class="large-brain">🧠</div>
+                    <p>MRI preview will appear here</p>
+                </div>
+            </div>
+
+            <div class="preview-info">
+                <div>
+                    <span>FILE</span>
+                    <strong id="previewFile">—</strong>
+                </div>
+                <div>
+                    <span>FORMAT</span>
+                    <strong id="previewFormat">—</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= RESULT ================= -->
+<section class="result-section" id="resultSection">
+    <div class="section-heading">
+        <span>DIAGNOSTIC REPORT</span>
+        <h2>AI Model Output</h2>
+    </div>
+
+    <div class="result-card">
+        <div class="result-left">
+            <div class="result-status">
+                <span class="result-dot"></span>
+                <span id="resultStatus">READY</span>
+            </div>
+            <h3 id="resultTitle">Awaiting Input Scan</h3>
+            <div id="resultDescription">
+                Upload an MRI scan and click <strong>Start AI Analysis</strong> to initiate the screening pipeline.
+            </div>
+        </div>
+
+        <div class="result-right">
+            <div class="result-circle">
+                <span>AI</span>
+                <small>CDSS</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Connectome Viewer -->
+    <div class="viewer-card" style="background: #0d1527; border: 1px solid #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div>
+                <h3 style="margin: 0; color: #f8fafc; font-size: 1rem;">3D Connectome & Defect Salience Map</h3>
+                <small style="color: #64748b;">Left-click + drag to rotate • Scroll to zoom • Click red node to identify ROI</small>
+            </div>
+            <div id="defectLegend" style="font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 0.8rem;">
+                <span><span style="display:inline-block; width:10px; height:10px; background:#00e5ff; border-radius:50%; margin-right:4px;"></span>Baseline Node</span>
+                <span><span style="display:inline-block; width:10px; height:10px; background:#ff1744; border-radius:50%; margin-right:4px;"></span>Salient Defect ROI</span>
+            </div>
+        </div>
+
+        <!-- Single 3D WebGL Canvas Container with Tooltip -->
+        <div id="brain3DContainer" style="width: 100%; height: 440px; border-radius: 8px; position: relative; overflow: hidden; background: radial-gradient(circle at center, #111e38 0%, #080d1a 100%);">
+            <div id="nodeTooltip" style="display: none; position: absolute; top: 12px; left: 12px; z-index: 20; background: rgba(15, 23, 42, 0.92); border: 1px solid #ff1744; border-radius: 8px; padding: 0.75rem 1rem; color: #fff; pointer-events: none; backdrop-filter: blur(6px); box-shadow: 0 8px 24px rgba(0,0,0,0.6); max-width: 260px;">
+                <div id="tooltipStatus" style="font-size: 0.7rem; font-weight: 700; color: #ff1744; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">DEFECT REGION</div>
+                <div id="tooltipName" style="font-size: 0.95rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Region Name</div>
+                <div id="tooltipScore" style="font-size: 0.8rem; color: #94a3b8;">Salience Anomaly: <strong style="color: #38bdf8;">--</strong></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER / REGULATORY NOTICE ================= -->
+<footer style="margin-top: 3rem; padding: 2rem 1.5rem; border-top: 1px solid #1e293b; background: #0b1120; font-size: 0.75rem; color: #64748b; line-height: 1.6; text-align: center;">
+    <div style="max-width: 900px; margin: 0 auto;">
+        <strong style="color: #cbd5e1;">Investigational Clinical Decision Support System (CDSS) Notice:</strong> 
+        This platform is designed to assist credentialed neurologists and radiologists in the rapid classification of neurodegenerative and neurodevelopmental alterations. It does not replace independent radiological verification, physical neurological examination, or comprehensive neuropsychological assessment. Scans processed locally on institutional hardware under HIPAA compliance standards.
+    </div>
+</footer>
+
+</body>
+</html>

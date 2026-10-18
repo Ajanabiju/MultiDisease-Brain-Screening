@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Authentication | NeuroScreen CDSS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .login-body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #090e17;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #e2e8f0;
+            padding: 1.5rem;
+        }
+        .portal-card {
+            background: #131d2e;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            max-width: 480px;
+            width: 100%;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.7);
+        }
+        .access-badge {
+            display: inline-block;
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.3rem 0.7rem;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+        }
+        .portal-card h1 { font-size: 1.6rem; margin: 0 0 0.5rem 0; color: #ffffff; }
+        .portal-card p { font-size: 0.9rem; color: #94a3b8; line-height: 1.5; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.4rem; }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            background: #090e17;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #ffffff;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .form-group input:focus { border-color: #38bdf8; }
+        .disclaimer-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 6px;
+            padding: 0.8rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-bottom: 1.5rem;
+        }
+        .btn-auth {
+            width: 100%;
+            background: #0284c7;
+            color: white;
+            padding: 0.85rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .btn-auth:hover { background: #0369a1; }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+        }
+    </style>
+</head>
+<body class="login-body">
+    <div class="portal-card">
+        <span class="access-badge">Restricted Clinical System</span>
+        <h1>NeuroScreen CDSS</h1>
+        <p>Clinical Decision Support Platform for Multi-Disease Neuroimaging Screening (ASD / AD / PD).</p>
+
+        {% if error %}
+        <div class="alert-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="username">Institutional Staff ID</label>
+                <input type="text" id="username" name="username" placeholder="neuro_lead" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Clinical Key / Passcode</label>
+                <input type="password" id="password" name="password" placeholder="••••••••••••" required>
+            </div>
+
+            <div class="disclaimer-box">
+                <strong>Statutory Notice:</strong> This software is a Class II Clinical Decision Support Tool (CDSS). Access is restricted to licensed medical practitioners. Data entered must strictly be de-identified pursuant to HIPAA/DISHA guidelines.
+            </div>
+
+            <button type="submit" class="btn-auth">Authorize & Access Terminal</button>
+        </form>
+    </div>
+</body>
+</html>
