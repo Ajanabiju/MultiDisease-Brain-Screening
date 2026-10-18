@@ -28,9 +28,12 @@ class UnifiedNeuroGraphDataset(Dataset):
         print("[Atlas] Fetching AAL 116-region atlas coordinates...")
         aal = datasets.fetch_atlas_aal()
         self.aal_maps = aal.maps
-        
-        coords = plotting.find_parcellation_cut_coords(labels_img=self.aal_maps)
-        coords = np.array(coords, dtype=np.float32)
+        try:
+            from nilearn.plotting import find_parcellation_cut_coords
+            coords = find_parcellation_cut_coords(labels_img=self.aal_maps)
+        except (AttributeError, ImportError):
+            from nilearn.maskers.parcellations import _find_parcellation_cut_coords
+            coords = _find_parcellation_cut_coords(labels_img=self.aal_maps)
         if len(coords) < self.n_rois:
             pad_n = self.n_rois - len(coords)
             coords = np.pad(coords, ((0, pad_n), (0, 0)), mode='edge')

@@ -212,10 +212,9 @@ def train_production():
 
     target_names = ["0: HC (Control)", "1: ASD (Autism)", "2: AD (Alzheimer's)", "3: PD (Parkinson's)"]
     print("Detailed Classification Report:")
-    print(classification_report(overall_y_true, overall_y_pred, target_names=target_names, zero_division=0))
-
+    print(classification_report(overall_y_true, overall_y_pred, labels=list(range(len(target_names))), target_names=target_names, zero_division=0))
     print("Confusion Matrix:")
-    print(confusion_matrix(overall_y_true, overall_y_pred))
+    print(confusion_matrix(overall_y_true, overall_y_pred, labels=list(range(len(target_names)))))
 
     # Also save the top-performing fold as the default production checkpoint
     best_fold_idx = np.argmax([m[1] for m in fold_metrics]) + 1
