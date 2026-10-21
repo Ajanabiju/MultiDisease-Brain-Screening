@@ -7,6 +7,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import classification_report, confusion_matrix, f1_score
+from nilearn.plotting import find_parcellation_cut_coords
 
 from src.data.real_multimodal_dataset import UnifiedNeuroGraphDataset
 

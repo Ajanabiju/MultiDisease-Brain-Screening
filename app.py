@@ -22,16 +22,108 @@ from train_multidisease_production import ProductionNeuroGNN
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "neuro-screening-secure-key-9281")
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # Support up to 500MB
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# Registered staff directory
-CLINICAL_STAFF = {
-    "neuro_lead": {
-        "password": "ClinicalPass2026!",
-        "name": "Dr. Parappil",
-        "license": "KMC-NEURO-8842",
-        "role": "Consultant Neurologist"
-    }
-}
+DB_PATH = os.path.join(BASE_DIR, "neuro_users.db")
+
+def init_db():
+    """Initializes the SQLite database and seeds default staff if not present."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS clinicians (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            staff_id TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            name TEXT NOT NULL,
+            license TEXT NOT NULL,
+            role TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Seed default account: neuro_lead / ClinicalPass2026!
+    cursor.execute("SELECT * FROM clinicians WHERE staff_id = ?", ("neuro_lead",))
+    if not cursor.fetchone():
+        hashed_pw = generate_password_hash("ClinicalPass2026!")
+        cursor.execute('''
+            INSERT INTO clinicians (staff_id, password_hash, name, license, role)
+            VALUES (?, ?, ?, ?, ?)
+        ''', ("neuro_lead", hashed_pw, "Dr. Parappil", "KMC-NEURO-8842", "Consultant Neurologist"))
+        print("[DATABASE] Default staff account seeded: neuro_lead")
+        
+    conn.commit()
+    conn.close()
+
+# Initialize SQLite database on app startup
+init_db()
+
+
+def get_clinician_by_staff_id(staff_id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM clinicians WHERE staff_id = ?", (staff_id,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
+
+
+# ==========================================
+# AUTHENTICATION ROUTES (DATABASE BACKED)
+# ==========================================
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        staff_id = request.form.get("staff_id", "").strip()
+        password = request.form.get("password", "")
+
+        user = get_clinician_by_staff_id(staff_id)
+        if user and check_password_hash(user["password_hash"], password):
+            session["clinician_authenticated"] = True
+            session["clinician_id"] = user["staff_id"]
+            session["clinician_name"] = user["name"]
+            session["clinician_license"] = user["license"]
+            session["clinician_role"] = user["role"]
+            return redirect(url_for("home"))
+
+        return render_template("login.html", error="Invalid Clinical Staff ID or Security Passkey.")
+    
+    if session.get("clinician_authenticated"):
+        return redirect(url_for("home"))
+    return render_template("login.html")
+
+
+@app.route("/register", methods=["POST"])
+def register():
+    staff_id = request.form.get("new_staff_id", "").strip()
+    password = request.form.get("new_password", "")
+    name = request.form.get("new_name", "").strip()
+    license_no = request.form.get("new_license", "").strip()
+    role = request.form.get("new_role", "Resident Neurologist").strip()
+
+    if not (staff_id and password and name and license_no):
+        return render_template("login.html", reg_error="All registration fields are required.")
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        pw_hash = generate_password_hash(password)
+        cursor.execute('''
+            INSERT INTO clinicians (staff_id, password_hash, name, license, role)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (staff_id, pw_hash, name, license_no, role))
+        conn.commit()
+        return render_template("login.html", success="Registration approved. You may now sign in.")
+    except sqlite3.IntegrityError:
+        return render_template("login.html", reg_error="Staff ID already registered in CDSS database.")
+    finally:
+        conn.close()
+
+
+
 
 DISEASE_CLASSES = {
     0: {"name": "Healthy Control (HC)", "badge": "success", "desc": "No significant neurodegenerative or functional dysconnectivity patterns detected."},
@@ -108,115 +200,169 @@ def adjust_tensor_dimensions(x, adj, target_nodes=116):
     return x, adj
 
 
-def compute_connectome_defects(x_tensor, adj_matrix, top_k_nodes=6, top_k_edges=12):
+def compute_connectome_defects(x, adj, top_k=8):
     """
-    Identifies top salient/impacted brain regions based on node feature energy.
+    Computes regional salience scores across brain parcels.
+    Guarantees consistent 1D shapes for broadcasting and avoids shape mismatches.
     """
-    node_feat = x_tensor.squeeze(0).cpu().numpy()[:116]   # Restrict to true 116 anatomical nodes
-    adj = adj_matrix.squeeze(0).cpu().numpy()[:116, :116]
+    # 1. Convert to numpy and peel off batch dimension
+    if isinstance(x, torch.Tensor):
+        x_np = x.detach().cpu().numpy()
+    else:
+        x_np = np.array(x)
 
-    node_norms = np.linalg.norm(node_feat, axis=-1)
-    norm_scores = (node_norms - node_norms.min()) / (node_norms.max() - node_norms.min() + 1e-8) * 100
-    top_node_indices = np.argsort(norm_scores)[::-1][:top_k_nodes]
+    if isinstance(adj, torch.Tensor):
+        adj_np = adj.detach().cpu().numpy()
+    else:
+        adj_np = np.array(adj)
 
-    nodes = []
-    for i in range(116):
-        is_defect = i in top_node_indices
-        label_name = AAL_LABELS[i] if i < len(AAL_LABELS) else f"ROI {i+1}"
-        nodes.append({
-            "id": i,
-            "name": label_name,
-            "x": float(COORDS_LIST[i][0]),
-            "y": float(COORDS_LIST[i][1]),
-            "z": float(COORDS_LIST[i][2]),
-            "score": float(round(norm_scores[i], 1)),
-            "is_defect": bool(is_defect)
+    while x_np.ndim > 2:
+        x_np = x_np[0]
+    while adj_np.ndim > 2:
+        adj_np = adj_np[0]
+
+    # 2. Determine target node count strictly from adjacency matrix
+    num_nodes = adj_np.shape[0]
+
+    # 3. Orient x_np so shape is (num_nodes, features)
+    if x_np.shape[0] != num_nodes and x_np.shape[1] == num_nodes:
+        x_np = x_np.T
+
+    # If x_np still doesn't match node count, truncate or pad along axis 0
+    if x_np.shape[0] > num_nodes:
+        x_np = x_np[:num_nodes, :]
+    elif x_np.shape[0] < num_nodes:
+        pad = np.zeros((num_nodes - x_np.shape[0], x_np.shape[1]), dtype=x_np.dtype)
+        x_np = np.vstack([x_np, pad])
+
+    # 4. Calculate node energy across features (axis=1) -> shape: (num_nodes,)
+    node_energies = np.mean(np.abs(x_np), axis=1)
+
+    # 5. Calculate degree centrality across nodes (axis=1) -> shape: (num_nodes,)
+    degree_centrality = np.sum(np.abs(adj_np), axis=1)
+
+    # Ensure both arrays are strictly 1D and equal length before multiplying
+    node_energies = np.ravel(node_energies)[:num_nodes]
+    degree_centrality = np.ravel(degree_centrality)[:num_nodes]
+
+    combined_scores = node_energies * (1.0 + degree_centrality)
+
+    # 6. Normalize scores between 0.1 and 1.0
+    min_s, max_s = np.min(combined_scores), np.max(combined_scores)
+    if max_s > min_s:
+        norm_scores = 0.1 + 0.9 * ((combined_scores - min_s) / (max_s - min_s))
+    else:
+        norm_scores = np.ones(num_nodes) * 0.5
+
+    # 7. Extract top salient defect nodes
+    top_indices = set(np.argsort(norm_scores)[-top_k:].tolist())
+
+    nodes_3d = []
+    for idx in range(num_nodes):
+        nodes_3d.append({
+            "id": int(idx),
+            "score": float(norm_scores[idx]),
+            "is_defect": bool(idx in top_indices)
         })
 
-    edges = []
-    candidate_edges = []
-    for src in top_node_indices:
-        for dst in range(116):
-            if src != dst and adj[src, dst] > 0.05:
-                edge_weight = float(adj[src, dst] * (norm_scores[src] + norm_scores[dst]) / 2.0)
-                candidate_edges.append((edge_weight, int(src), int(dst)))
+    # 8. Extract defect edges
+    edges_3d = []
+    for src in top_indices:
+        for dst in top_indices:
+            if src < dst and adj_np[src, dst] > 0.15:
+                edges_3d.append({
+                    "source": int(src),
+                    "target": int(dst),
+                    "weight": float(adj_np[src, dst])
+                })
 
-    candidate_edges.sort(key=lambda item: item[0], reverse=True)
-    seen = set()
-    for weight, u, v in candidate_edges:
-        edge_key = tuple(sorted([u, v]))
-        if edge_key not in seen:
-            seen.add(edge_key)
-            edges.append({"source": u, "target": v, "weight": float(round(weight, 3))})
-            if len(edges) >= top_k_edges:
-                break
+    return nodes_3d, edges_3d
+import nibabel as nib
+import numpy as np
+import torch
+from nilearn.maskers import NiftiLabelsMasker
+from nilearn import datasets
 
-    return nodes, edges
+# Global cache for AAL atlas so it doesn't re-download on every analysis
+AAL_DATASET = None
+
+def get_aal_atlas():
+    global AAL_DATASET
+    if AAL_DATASET is None:
+        AAL_DATASET = datasets.fetch_atlas_aal(version='SPM12')
+    return AAL_DATASET
 
 
-def process_uploaded_scan(file_path, filename):
-    ext = filename.lower()
-    
-    # Case 1: 3D/4D NIfTI neuroimaging volume
-    if ext.endswith('.nii') or ext.endswith('.nii.gz') or ext.endswith('.hdr'):
-        img = nib.load(file_path)
-        data = img.get_fdata()
-        
-        if data.ndim == 4:
-            # 4D rs-fMRI (ASD)
-            try:
-                ts = masker.transform(img)
-            except Exception:
-                mean_3d = nib.Nifti1Image(np.mean(data, axis=-1), img.affine)
-                signals = masker.transform(mean_3d).squeeze()
-                if len(signals) < 116:
-                    signals = np.pad(signals, (0, 116 - len(signals)))
-                else:
-                    signals = signals[:116]
-                ts = np.tile(signals, (10, 1))
+def extract_aal116_graph_from_nii(nii_path):
+    """
+    Extracts strictly:
+      x:   [1, 116, 64]   (116 anatomical ROIs, 64 node features)
+      adj: [1, 116, 116]  (116 x 116 connectome adjacency matrix)
+    """
+    atlas = get_aal_atlas()
+    atlas_filename = atlas.maps
 
-            corr = np.corrcoef(ts.T)
-            corr = np.nan_to_num(corr, nan=0.0, posinf=1.0, neginf=-1.0)
+    masker = NiftiLabelsMasker(
+        labels_img=atlas_filename,
+        standardize=True,
+        memory='nilearn_cache',
+        verbose=0
+    )
 
-            if corr.shape[0] < 116:
-                corr = np.pad(corr, ((0, 116 - corr.shape[0]), (0, 116 - corr.shape[0])), mode='constant')
-            else:
-                corr = corr[:116, :116]
+    # 1. Extract regional signal from the 116 AAL parcels
+    signals = masker.fit_transform(nii_path)  # 4D: (time_points, parcels), 3D: (1, parcels)
 
-            np.fill_diagonal(corr, 1.0)
-            adj = (corr + 1.0) / 2.0
-            deg_strength = np.sum(adj, axis=1, keepdims=True)
-            conn_var = np.std(adj, axis=1, keepdims=True)
-            f1 = np.repeat(deg_strength, 32, axis=1).astype(np.float32)
-            f2 = np.repeat(conn_var, 32, axis=1).astype(np.float32)
-        else:
-            # 3D Structural MRI (AD / PD / HC)
-            if data.ndim > 3:
-                data = data[..., 0]
-            img_3d = nib.Nifti1Image(data, img.affine)
-            signals = masker.transform(img_3d).squeeze()
-            if signals.ndim == 0:
-                signals = np.zeros(116, dtype=np.float32)
-            elif len(signals) < 116:
-                signals = np.pad(signals, (0, 116 - len(signals)))
-            else:
-                signals = signals[:116]
-            f1 = np.repeat(signals[:, None], 32, axis=1).astype(np.float32)
-            f2 = np.repeat((signals * 0.88)[:, None], 32, axis=1).astype(np.float32)
-            adj = BASE_ADJ.copy().astype(np.float32)
+    if signals.ndim == 1:
+        signals = signals.reshape(1, -1)
 
-    # Case 2: 2D MRI Slice (PNG / JPG)
+    n_samples, n_parcels = signals.shape
+
+    # Ensure exactly 116 parcels
+    if n_parcels > 116:
+        signals = signals[:, :116]
+    elif n_parcels < 116:
+        pad = np.zeros((n_samples, 116 - n_parcels), dtype=signals.dtype)
+        signals = np.hstack([signals, pad])
+
+    # 2. Build Node Features X of shape (1, 116, 64)
+    if n_samples >= 64:
+        # 4D functional MRI: first 64 temporal points as features
+        feat_matrix = signals[:64, :].T  # Transpose to (116, 64)
     else:
-        pil_img = Image.open(file_path).convert('L').resize((116, 64))
-        arr = np.array(pil_img, dtype=np.float32) / 255.0
-        f1 = arr[:, :32]
-        f2 = arr[:, 32:]
-        adj = BASE_ADJ.copy().astype(np.float32)
+        # 3D structural MRI (T1/T2): synthesize 64 feature dimensions across parcels
+        base_vals = signals[0, :]  # shape: (116,)
+        phases = np.linspace(0.1, 2.0, 64)  # shape: (64,)
+        feat_matrix = np.outer(base_vals, phases)  # shape: (116, 64)
 
-    x = np.concatenate([f1, f2], axis=-1)  # (116, 64)
-    return torch.tensor(x, dtype=torch.float32).unsqueeze(0), torch.tensor(adj, dtype=torch.float32).unsqueeze(0)
+    # 3. Build Adjacency Matrix A of shape (1, 116, 116)
+    if n_samples > 10:
+        # Functional Pearson correlation
+        with np.errstate(all='ignore'):
+            corr = np.corrcoef(signals.T)
+            corr = np.nan_to_num(corr, nan=0.0)
+    else:
+        # Structural/spatial Euclidean distance kernel between region centroids
+        coords = np.array(atlas.region_coords)[:116]
+        diffs = coords[:, np.newaxis, :] - coords[np.newaxis, :, :]
+        dist_matrix = np.sqrt(np.sum(diffs ** 2, axis=-1))
+        sigma = 20.0
+        corr = np.exp(- (dist_matrix ** 2) / (2.0 * (sigma ** 2)))
 
+    # Sparsify connectivity and set diagonal
+    corr[corr < 0.20] = 0.0
+    np.fill_diagonal(corr, 1.0)
+    adj_matrix = corr[:116, :116]
 
+    # Convert to PyTorch tensors with batch dimension
+    x_tensor = torch.tensor(feat_matrix, dtype=torch.float32).unsqueeze(0)   # [1, 116, 64]
+    adj_tensor = torch.tensor(adj_matrix, dtype=torch.float32).unsqueeze(0) # [1, 116, 116]
+
+    return x_tensor, adj_tensor
+def process_uploaded_scan(file_path, filename):
+    filename_lower = filename.lower()
+    if not (filename_lower.endswith(".nii") or filename_lower.endswith(".nii.gz")):
+        raise ValueError("Unsupported format. Clinical CDSS requires 3D/4D volumetric NIfTI (.nii, .nii.gz).")
+    return extract_aal116_graph_from_nii(file_path)
 # ==========================================
 # AUTHENTICATION & SECURE CLINICAL ROUTING
 # ==========================================
@@ -244,26 +390,6 @@ def favicon():
     return '', 204
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        data = request.get_json() if request.is_json else request.form
-        username = data.get("username", "").strip()
-        password = data.get("password", "")
-
-        user = CLINICAL_STAFF.get(username)
-        if user and user["password"] == password:
-            session["clinician_authenticated"] = True
-            session["clinician_name"] = user["name"]
-            session["clinician_license"] = user["license"]
-            session["clinician_role"] = user["role"]
-            return redirect(url_for("home"))
-
-        return render_template("login.html", error="Invalid Clinical Staff ID or Security Passcode.")
-    
-    if session.get("clinician_authenticated"):
-        return redirect(url_for("home"))
-    return render_template("login.html")
 
 
 @app.route("/logout")

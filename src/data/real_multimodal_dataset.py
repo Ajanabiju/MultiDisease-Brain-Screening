@@ -7,6 +7,7 @@ import nibabel as nib
 from nilearn import datasets, plotting
 from nilearn.maskers import NiftiLabelsMasker
 import warnings
+from nilearn.plotting import find_parcellation_cut_coords
 
 warnings.filterwarnings('ignore', category=UserWarning)
 warnings.filterwarnings('ignore', category=RuntimeWarning)

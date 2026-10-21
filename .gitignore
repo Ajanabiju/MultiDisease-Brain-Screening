@@ -3,6 +3,5 @@ sample_scans/
 *.nii.gz
 *.hdr
 *.img
-checkpoints/
-*.pt
+
 __pycache__/
