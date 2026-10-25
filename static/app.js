@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else {
                     const rawText = await response.text();
                     if (response.status === 413) {
-                        throw new Error("File exceeds upload limit (500MB). Please compress the scan.");
+                        throw new Error("Server transfer buffer exceeded. Please use .nii.gz format.");
                     }
                     throw new Error(`Server returned HTTP ${response.status}: ${rawText.slice(0, 100)}`);
                 }
@@ -491,62 +491,81 @@ function onBrainNodeClick(event) {
 /* =====================================================
    RENDER GRAPH DATA FROM FLASK
 ===================================================== */
+/* =====================================================
+   RENDER GRAPH DATA FROM FLASK (NODES + DEFECT EDGES)
+===================================================== */
 function render3DConnectomeData(connectomeData) {
     if (!brainScene) {
         const ok = init3DBrainViewer();
         if (!ok) return;
     }
 
+    // Clean previous graph group
     if (brainGraphGroup && brainScene) {
         brainScene.remove(brainGraphGroup);
         brainGraphGroup = null;
     }
 
     brainGraphGroup = new THREE.Group();
+    brainGraphGroup.name = "connectomeGraph";
+
     const { nodes, edges } = connectomeData;
     const nodeLookup = {};
 
+    // 1. Shader materials for baseline and salient defect nodes
     const normalNodeMat = new THREE.MeshStandardMaterial({
         color: 0x00e5ff,
         emissive: 0x00404d,
-        roughness: 0.3,
-        metalness: 0.5
-    });
-
-    const defectNodeMat = new THREE.MeshStandardMaterial({
-        color: 0xff1744,
-        emissive: 0x880016,
         roughness: 0.2,
         metalness: 0.7
     });
 
-    const normalGeo = new THREE.SphereGeometry(1.6, 16, 16);
-    const defectGeo = new THREE.SphereGeometry(3.8, 24, 24);
+    const defectNodeMat = new THREE.MeshStandardMaterial({
+        color: 0xff1744,
+        emissive: 0xd50000,
+        roughness: 0.1,
+        metalness: 0.9
+    });
 
+    const normalGeo = new THREE.SphereGeometry(2.0, 16, 16);
+    const defectGeo = new THREE.SphereGeometry(4.2, 24, 24);
+
+    // 2. Add All 116 Nodes
     nodes.forEach(n => {
-        // MNI to Three.js coordinates
-        const posX = n.x;
-        const posY = n.z;
-        const posZ = -n.y;
+        // MNI coordinates to Three.js coordinates (X -> x, Z -> y, -Y -> z)
+        const posX = Number(n.x);
+        const posY = Number(n.z);
+        const posZ = -Number(n.y);
 
-        const mesh = new THREE.Mesh(n.is_defect ? defectGeo : normalGeo, n.is_defect ? defectNodeMat : normalNodeMat);
+        const mesh = new THREE.Mesh(
+            n.is_defect ? defectGeo : normalGeo,
+            n.is_defect ? defectNodeMat : normalNodeMat
+        );
         mesh.position.set(posX, posY, posZ);
 
         mesh.userData = {
             id: n.id,
-            name: n.name,
+            name: n.name || n.label || `ROI ${n.id + 1}`,
             score: n.score,
-            is_defect: n.is_defect
+            is_defect: Boolean(n.is_defect)
         };
 
         brainGraphGroup.add(mesh);
         nodeLookup[n.id] = new THREE.Vector3(posX, posY, posZ);
     });
 
-    const edgeMaterial = new THREE.LineBasicMaterial({
+    // 3. Add Normal and Defect Connection Tracts
+    const normalLineMat = new THREE.LineBasicMaterial({
+        color: 0x0284c7,
+        transparent: true,
+        opacity: 0.4
+    });
+
+    const defectLineMat = new THREE.LineBasicMaterial({
         color: 0xff1744,
         transparent: true,
-        opacity: 0.85
+        opacity: 0.95,
+        linewidth: 2.5
     });
 
     if (edges && edges.length > 0) {
@@ -554,8 +573,11 @@ function render3DConnectomeData(connectomeData) {
             const p1 = nodeLookup[e.source];
             const p2 = nodeLookup[e.target];
             if (p1 && p2) {
-                const edgeGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
-                const line = new THREE.Line(edgeGeo, edgeMaterial);
+                const lineGeo = new THREE.BufferGeometry().setFromPoints([p1, p2]);
+                const line = new THREE.Line(
+                    lineGeo,
+                    e.is_defect ? defectLineMat : normalLineMat
+                );
                 brainGraphGroup.add(line);
             }
         });

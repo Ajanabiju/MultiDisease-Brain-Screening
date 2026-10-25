@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Connectome Hub Defense - {{ disease }}</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 flex flex-col items-center min-h-screen p-6">
+    <header class="w-full max-w-5xl flex justify-between items-center mb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-white">3D Brain Connectome Defect Map</h1>
+            <p class="text-sm text-slate-400">Class Target: <span class="text-sky-400 font-semibold">{{ disease }}</span></p>
+        </div>
+        <div class="flex items-center space-x-4 text-xs">
+            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-500 inline-block mr-1"></span> Defect Hub</span>
+            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-sky-400 inline-block mr-1"></span> Normal ROI</span>
+            <span class="flex items-center"><span class="w-4 h-0.5 bg-red-400 inline-block mr-1"></span> Defect Tract</span>
+            <span class="flex items-center"><span class="w-4 h-0.5 bg-sky-600 inline-block mr-1"></span> Normal Tract</span>
+        </div>
+    </header>
+
+    <main class="w-full max-w-5xl h-[650px] bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl relative">
+        <div id="brain-plot" class="w-full h-full"></div>
+    </main>
+
+    <script>
+        const nodes = {{ nodes_json | safe }};
+        const edges = {{ edges_json | safe }};
+
+        // 1. Separate normal and defect edges with 'null' delimiters
+        let normalEdgeX = [], normalEdgeY = [], normalEdgeZ = [];
+        let defectEdgeX = [], defectEdgeY = [], defectEdgeZ = [];
+
+        edges.forEach(edge => {
+            if (edge.is_defect) {
+                defectEdgeX.push(edge.source[0], edge.target[0], null);
+                defectEdgeY.push(edge.source[1], edge.target[1], null);
+                defectEdgeZ.push(edge.source[2], edge.target[2], null);
+            } else {
+                normalEdgeX.push(edge.source[0], edge.target[0], null);
+                normalEdgeY.push(edge.source[1], edge.target[1], null);
+                normalEdgeZ.push(edge.source[2], edge.target[2], null);
+            }
+        });
+
+        // 2. Normal Edges Trace
+        const traceNormalEdges = {
+            type: 'scatter3d',
+            mode: 'lines',
+            x: normalEdgeX,
+            y: normalEdgeY,
+            z: normalEdgeZ,
+            line: {
+                color: 'rgba(56, 189, 248, 0.25)',
+                width: 1.5
+            },
+            name: 'Normal Tracts',
+            hoverinfo: 'none'
+        };
+
+        // 3. Defect Edges Trace
+        const traceDefectEdges = {
+            type: 'scatter3d',
+            mode: 'lines',
+            x: defectEdgeX,
+            y: defectEdgeY,
+            z: defectEdgeZ,
+            line: {
+                color: 'rgba(239, 68, 68, 0.65)',
+                width: 3.5
+            },
+            name: 'Impaired Connections',
+            hoverinfo: 'none'
+        };
+
+        // 4. Normal Nodes Trace
+        const normalNodes = nodes.filter(n => !n.is_defect);
+        const traceNormalNodes = {
+            type: 'scatter3d',
+            mode: 'markers',
+            x: normalNodes.map(n => n.x),
+            y: normalNodes.map(n => n.y),
+            z: normalNodes.map(n => n.z),
+            text: normalNodes.map(n => `${n.label} (ID: ${n.id})`),
+            name: 'Normal ROIs',
+            marker: {
+                size: normalNodes.map(n => n.size),
+                color: '#38bdf8',
+                opacity: 0.6
+            }
+        };
+
+        // 5. Defect Nodes Trace
+        const defectNodes = nodes.filter(n => n.is_defect);
+        const traceDefectNodes = {
+            type: 'scatter3d',
+            mode: 'markers+text',
+            textposition: 'top center',
+            textfont: { color: '#f87171', size: 11 },
+            x: defectNodes.map(n => n.x),
+            y: defectNodes.map(n => n.y),
+            z: defectNodes.map(n => n.z),
+            text: defectNodes.map(n => `DEFECT: ${n.label}`),
+            name: 'Defect Hubs',
+            marker: {
+                size: defectNodes.map(n => n.size),
+                color: '#ef4444',
+                opacity: 0.95,
+                line: { color: '#ffffff', width: 2 }
+            }
+        };
+
+        const layout = {
+            margin: { l: 0, r: 0, b: 0, t: 0 },
+            paper_bgcolor: '#0f172a',
+            showlegend: true,
+            legend: { x: 0.02, y: 0.95, font: { color: '#94a3b8' } },
+            scene: {
+                xaxis: { title: 'Sagittal (X)', color: '#64748b', showgrid: true, zeroline: false },
+                yaxis: { title: 'Coronal (Y)', color: '#64748b', showgrid: true, zeroline: false },
+                zaxis: { title: 'Axial (Z)', color: '#64748b', showgrid: true, zeroline: false },
+                camera: { eye: { x: 1.5, y: 1.5, z: 1.2 } }
+            }
+        };
+
+        Plotly.newPlot('brain-plot', [
+            traceNormalEdges, 
+            traceDefectEdges, 
+            traceNormalNodes, 
+            traceDefectNodes
+        ], layout, { responsive: true });
+    </script>
+</body>
+</html>
