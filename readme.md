@@ -2,7 +2,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg)](https://pytorch.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 [![Atlas: AAL--116](https://img.shields.io/badge/Brain%20Atlas-AAL--116-orange.svg)](https://www.gin.cnrs.fr/en/tools/aal/)
 
 NeuroScreen is an explainable Clinical Decision Support System (CDSS) for automated, concurrent screening of neurodegenerative and neurodevelopmental brain disorders. Bypassing rigid, computationally prohibitive 3D convolutional voxel grids, NeuroScreen models multi-modal volumetric brain scans as 116-node anatomical connectomes using the Automated Anatomical Labeling (AAL-116) atlas.
@@ -74,23 +74,27 @@ Evaluated on a strictly held-out test cohort of 55 clinical scans across the **A
 
 ## Project Structure
 
-```text
 Clean-Brain-Screening/
-├── app.py                         # Flask backend, DICOM/NIfTI intake, inference pipeline
+├── app.py                           # Flask backend, DICOM/NIfTI intake, inference pipeline
 ├── train_multidisease_production.py # NeuroGNN model architecture & training routines
 ├── checkpoints/
-│   └── best_multidisease_model.pt # Trained NeuroGNN checkpoint weights (116-node)
+│   └── best_multidisease_model.pt   # Trained NeuroGNN checkpoint weights (116-node)
+├── docs/
+│   └── screenshots/                 # Repository showcase images embedded in README
+│       ├── 01_upload_and_preview.png
+│       ├── 02_diagnostic_output.png
+│       ├── 03_3d_glass_brain_salience.png
+│       └── 04_clinical_report.png
 ├── static/
-│   ├── app.js                     # Three.js 3D glass brain renderer & UI logic
-│   ├── style.css                  # Modern dark-mode clinical dashboard styling
+│   ├── app.js                       # Three.js 3D glass brain renderer & UI logic
+│   ├── style.css                    # Modern dark-mode clinical dashboard styling
 │   └── models/
-│       └── brain.obj              # Anatomical 3D cortical surface mesh
+│       └── brain.obj                # Anatomical 3D cortical surface mesh
 ├── templates/
-│   └── index.html                 # CDSS intake, 3D viewer & reporting dashboard
-├── figures/                       # Architectural diagrams & evaluation plots
-├── requirements.txt               # Python package dependencies
-└── README.md                      # Project documentation
-```
+│   └── index.html                   # CDSS intake, 3D viewer & reporting dashboard
+├── figures/                         # LaTeX thesis figures & diagrams
+├── requirements.txt                 # Python package dependencies
+└── README.md                        # Project documentation
 
 ---
 
@@ -183,6 +187,3 @@ pip install -r requirements.txt
 
 ---
 
-## License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
