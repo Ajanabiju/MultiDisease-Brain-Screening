@@ -334,7 +334,6 @@ def predict():
         return jsonify({'error': 'No selected file'}), 400
 
     filename = file.filename
-    fname_lower = filename.lower()
     print(f"[*] Processing clinical screening upload: {filename}")
 
     disease_labels = [
@@ -351,17 +350,7 @@ def predict():
         3: [70, 71, 72, 73, 74, 75]               # PD: Basal ganglia & striatal degradation
     }
 
-    # Identify demo/known target classes from filename
     target_idx = None
-    if "alzheimer" in fname_lower or "_ad" in fname_lower or "ad_" in fname_lower:
-        target_idx = 2
-    elif "parkinson" in fname_lower or "_pd" in fname_lower or "pd_" in fname_lower:
-        target_idx = 3
-    elif "autism" in fname_lower or "_asd" in fname_lower or "asd_" in fname_lower:
-        target_idx = 1
-    elif "healthy" in fname_lower or "_hc" in fname_lower or "hc_" in fname_lower:
-        target_idx = 0
-
     tmp_path = None
     try:
         x_model = None
@@ -393,38 +382,82 @@ def predict():
             x_model = x_model.float()
             adj_model = adj_model.float()
 
-        # 3. Model Forward Inference
+            # Ensure batch dimension: shape should be (1, 116, 64) and (1, 116, 116)
+            if x_model.ndim == 2:
+                x_model = x_model.unsqueeze(0)
+            if adj_model.ndim == 2:
+                adj_model = adj_model.unsqueeze(0)
+
+            # Standardize features to match training distribution
+            x_mean = torch.mean(x_model, dim=(1, 2), keepdim=True)
+            x_std = torch.std(x_model, dim=(1, 2), keepdim=True) + 1e-6
+            x_model = (x_model - x_mean) / x_std
+
+            # Degree-normalize adjacency matrix
+            deg = torch.sum(adj_model, dim=-1, keepdim=True)
+            deg[deg == 0] = 1.0
+            adj_model = adj_model / deg
+
+        # 3. Model Forward Inference (Independent Multi-Label Sigmoid)
         with torch.no_grad():
             logits = model(x_model, adj_model)
-            probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
+            probs = torch.sigmoid(logits).cpu().numpy()[0]
             pred_idx = int(np.argmax(probs))
-
-        # 4. Enforce ground-truth consistency for known evaluation scans
-        if target_idx is not None and pred_idx != target_idx:
-            probs = np.array([0.02, 0.02, 0.02, 0.02], dtype=np.float32)
-            probs[target_idx] = 0.94
-            pred_idx = target_idx
 
         active_defects = defect_nodes_map.get(pred_idx, [])
         nodes_3d, edges_3d = compute_connectome_defects(x_model, adj_model, specific_hubs=active_defects)
 
+        connectome_data = {
+            "nodes": nodes_3d,
+            "edges": edges_3d
+        }
+
+        probabilities_dict = {
+            disease_labels[i]: round(float(probs[i]) * 100.0, 2)
+            for i in range(len(disease_labels))
+        }
+
+        primary_disease = disease_labels[pred_idx]
+        model_confidence = probabilities_dict[primary_disease]
+        co_occurring = [
+            disease_labels[i] for i in range(1, 4)
+            if i != pred_idx and (probs[i] * 100.0) >= 35.0
+        ]
+
+        badge_type = "success" if primary_disease == "Healthy Control (HC)" else "warning"
+
+        # 4. Extract Dynamic Clinician Details from Session
+        clinician_name = session.get("clinician_name", "Dr. Staff Clinician")
+        clinician_role = session.get("clinician_role", "Consultant Neurologist")
+        clinician_license = session.get("clinician_license", "KMC-VERIFIED")
+
+        subject_meta = {
+            "patient_name": request.form.get("patient_name", "Anonymous"),
+            "patient_age": request.form.get("patient_age", "N/A"),
+            "patient_gender": request.form.get("patient_gender", "N/A"),
+            "patient_phone": request.form.get("patient_phone", "N/A"),
+            "evaluating_clinician": clinician_name,
+            "designation": clinician_role,
+            "license": clinician_license
+        }
+
         return jsonify({
             "status": "success",
-            "prediction": disease_labels[pred_idx],
+            "prediction": primary_disease,
             "class_index": pred_idx,
-            "confidence": float(probs[pred_idx]),
-            "probabilities": {
-                disease_labels[i]: float(probs[i]) for i in range(4)
-            },
+            "confidence": model_confidence,
+            "probabilities": probabilities_dict,
+            "badge": badge_type,
             "defect_nodes": active_defects,
-            "nodes_3d": nodes_3d,
-            "edges_3d": edges_3d,
-            "scan_name": filename
+            "co_occurring": co_occurring,
+            "connectome_3d": connectome_data,
+            "scan_name": filename,
+            "subject_meta": subject_meta
         })
 
     except Exception as e:
-        print(f"[!] Analysis Exception: {str(e)}")
-        return jsonify({"error": f"Analysis Failed: {str(e)}"}), 500
+        print(f"[!] Error in predict: {e}")
+        return jsonify({"error": str(e)}), 500
 
     finally:
         if tmp_path and os.path.exists(tmp_path):

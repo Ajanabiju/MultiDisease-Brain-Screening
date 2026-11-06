@@ -136,39 +136,39 @@
 
     <!-- Patient Metadata Intake -->
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; background: #131d2e; padding: 1.25rem; border-radius: 8px; border: 1px solid #1e293b;">
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Patient Full Name</label>
-            <input type="text" id="patientNameInput" placeholder="e.g. John Doe" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
-        </div>
-
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Age (Years)</label>
-            <input type="number" id="patientAgeInput" min="1" max="120" placeholder="e.g. 58" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
-        </div>
-
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Biological Sex / Gender</label>
-            <select id="patientGenderInput" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
-        </div>
-
-        <div>
-            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Contact Number</label>
-            <input type="tel" id="patientPhoneInput" placeholder="+91 98765 43210" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
-        </div>
-
-        <div style="grid-column: 1 / -1;">
-            <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">Scan Modality / Protocol</label>
-            <select id="scanModalityInput" style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
-                <option value="3D T1-Weighted Structural MRI">3D T1-Weighted Structural MRI (OASIS / PPMI)</option>
-                <option value="4D rs-fMRI Resting-State Connectome">4D rs-fMRI Resting-State Connectome (ABIDE)</option>
-                <option value="2D Axial MRI Slice">2D Axial MRI Slice (Preview / Localizer)</option>
-            </select>
-        </div>
+    <div>
+        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">
+            Patient Full Name <span style="color: #ef4444;">*</span>
+        </label>
+        <input type="text" id="patientNameInput" placeholder="e.g. John Doe" required style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
     </div>
+
+    <div>
+        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">
+            Age (Years) <span style="color: #ef4444;">*</span>
+        </label>
+        <input type="number" id="patientAgeInput" min="1" max="120" placeholder="e.g. 58" required style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+    </div>
+
+    <div>
+        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">
+             Gender <span style="color: #ef4444;">*</span>
+        </label>
+        <select id="patientGenderInput" required style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+            <option value="" disabled selected>Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <div>
+        <label style="display: block; font-size: 0.75rem; font-weight: 600; color: #94a3b8; margin-bottom: 0.35rem; text-transform: uppercase;">
+            Contact Number <span style="color: #ef4444;">*</span>
+        </label>
+        <input type="tel" id="patientPhoneInput" placeholder="+91 98765 43210" required style="width: 100%; padding: 0.55rem; background: #090e17; border: 1px solid #334155; color: #fff; border-radius: 4px; box-sizing: border-box; outline: none;">
+    </div>
+</div>
 
     <div class="section-heading">
         <span>NEUROIMAGING ANALYSIS</span>
@@ -266,27 +266,31 @@
     </div>
 
     <!-- 3D Connectome Viewer -->
-    <div class="viewer-card" style="background: #0d1527; border: 1px solid #1e293b; border-radius: 12px; padding: 1.25rem; margin-top: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <div>
-                <h3 style="margin: 0; color: #f8fafc; font-size: 1rem;">3D Connectome & Defect Salience Map</h3>
-                <small style="color: #64748b;">Left-click + drag to rotate • Scroll to zoom • Click red node to identify ROI</small>
-            </div>
-            <div id="defectLegend" style="font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 0.8rem;">
-                <span><span style="display:inline-block; width:10px; height:10px; background:#00e5ff; border-radius:50%; margin-right:4px;"></span>Baseline Node</span>
-                <span><span style="display:inline-block; width:10px; height:10px; background:#ff1744; border-radius:50%; margin-right:4px;"></span>Salient Defect ROI</span>
-            </div>
+<div class="viewer-card" style="background: #0b111e; border: 1px solid #162032; border-radius: 12px; padding: 1.5rem 2rem; margin-top: 1.5rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);">
+    <!-- Header with Title & Legend aligned to corners -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+        <div>
+            <h3 style="margin: 0 0 4px 0; color: #f8fafc; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em;">3D Connectome &amp; Defect Salience Map</h3>
+            <small style="color: #64748b; font-size: 0.78rem;">Left-click + drag to rotate • Scroll to zoom • Click red node to identify ROI</small>
         </div>
-
-        <!-- Single 3D WebGL Canvas Container with Tooltip -->
-        <div id="brain3DContainer" style="width: 100%; height: 440px; border-radius: 8px; position: relative; overflow: hidden; background: radial-gradient(circle at center, #111e38 0%, #080d1a 100%);">
-            <div id="nodeTooltip" style="display: none; position: absolute; top: 12px; left: 12px; z-index: 20; background: rgba(15, 23, 42, 0.92); border: 1px solid #ff1744; border-radius: 8px; padding: 0.75rem 1rem; color: #fff; pointer-events: none; backdrop-filter: blur(6px); box-shadow: 0 8px 24px rgba(0,0,0,0.6); max-width: 260px;">
-                <div id="tooltipStatus" style="font-size: 0.7rem; font-weight: 700; color: #ff1744; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">DEFECT REGION</div>
-                <div id="tooltipName" style="font-size: 0.95rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">Region Name</div>
-                <div id="tooltipScore" style="font-size: 0.8rem; color: #94a3b8;">Salience Anomaly: <strong style="color: #38bdf8;">--</strong></div>
-            </div>
+        <div id="defectLegend" style="font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 1.25rem;">
+            <span style="display: inline-flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; background: #00e5ff; border-radius: 50%;"></span>
+                Baseline Node
+            </span>
+            <span style="display: inline-flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; background: #ff1744; border-radius: 50%;"></span>
+                Salient Defect ROI
+            </span>
         </div>
     </div>
+
+    <!-- Wide Seamless 3D Viewport -->
+    <div id="brain3DContainer">
+        <!-- Floating Red Accent Tooltip matching the screenshot -->
+        <div id="nodeTooltip" class="node-tooltip"></div>
+    </div>
+</div>
 </section>
 
 <!-- ================= FOOTER / REGULATORY NOTICE ================= -->

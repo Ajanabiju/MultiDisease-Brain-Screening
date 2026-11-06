@@ -2474,9 +2474,52 @@ footer {
     }
 
 }
+/* Seamless 3D Viewport matching the card */
+#brain3DContainer {
+    width: 100%;
+    height: 520px;
+    position: relative;
+    background: #080d18;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
 #brain3DContainer canvas {
     width: 100% !important;
     height: 100% !important;
     display: block;
-    background: transparent !important;
+    outline: none;
 }
+
+/* Tooltip Card matching the screenshot */
+.node-tooltip {
+    display: none;
+    position: absolute;
+    background: rgba(11, 17, 30, 0.92);
+    border: 1.5px solid #ff1744;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    pointer-events: none;
+    z-index: 50;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 10px rgba(255, 23, 68, 0.25);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    min-width: 170px;
+}
+/* =====================================================
+   PRINT & CLINICAL REPORT STYLES (FOOLPROOF FIX)
+===================================================== */
+.clinical-report-container {
+    color: #0f172a;
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    margin-top: 1rem;
+    text-align: left;
+}
+
