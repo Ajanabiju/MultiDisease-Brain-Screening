@@ -16,20 +16,6 @@ Traditional CNNs process 3D brain MRI as heavy voxel grids, which consumes signi
 
 ---
 
-## 📸 System Screenshots
-
-Screenshots of the running system are stored in `docs/screenshots/`:
-
-| Step 1: Patient Intake & Scan Localizer | Step 2: Multi-Label GNN Diagnostic Prediction |
-| :---: | :---: |
-| ![Intake & Upload](docs/screenshots/01_upload_and_preview.png) | ![Diagnostic Output](docs/screenshots/02_diagnostic_output.png) |
-| *Input patient details and check central axial slice preview* | *Independent probabilities across all 4 condition channels* |
-
-| Step 3: Explainable 3D Glass Brain (Node 74 Salience) | Step 4: Automated Clinical PDF Summary Report |
-| :---: | :---: |
-| ![3D Connectome](docs/screenshots/03_3d_glass_brain_salience.png) | ![Clinical Report](docs/screenshots/04_clinical_report.png) |
-| *Interactive Three.js connectome highlighting PD biomarkers* | *Standardized clinical summary ready for archival* |
-
 ---
 
 ## 🖥️ System Walkthrough
